@@ -1,5 +1,5 @@
-/** @type {import('ts-jest').JestConfigWithTsJest} **/
-module.exports = {
+/** @type {import('jest').Config} */
+const config = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   verbose: true,
@@ -27,9 +27,6 @@ module.exports = {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
   testPathIgnorePatterns: ['/node_modules/'],
-  globals: {
-    'ts-jest': {
-      isolatedModules: true,
-    }
-  }
 };
+
+module.exports = config;
