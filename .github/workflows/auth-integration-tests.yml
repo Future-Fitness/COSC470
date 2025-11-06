@@ -21,10 +21,10 @@ jobs:
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping"
+          --health-cmd="mysqladmin ping -uroot -ptestpassword"
           --health-interval=10s
           --health-timeout=5s
-          --health-retries=5
+          --health-retries=30
 
     steps:
       - name: Checkout code
@@ -45,16 +45,50 @@ jobs:
         working-directory: ./backend
         run: pnpm install
 
+      - name: Install MySQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y default-mysql-client
+          echo "✓ MySQL client installed"
+
       - name: Wait for MySQL to be ready
         run: |
-          for i in {1..30}; do
+          echo "Checking MySQL client tools..."
+          for cmd in mysqladmin mysql; do
+            if command -v $cmd >/dev/null 2>&1; then
+              echo "✓ $cmd available"
+            else
+              echo "✗ $cmd NOT available"
+            fi
+          done
+
+          echo "Waiting for MySQL to be ready..."
+          for i in {1..60}; do
             if mysqladmin ping -h"127.0.0.1" -P3306 -uroot -ptestpassword --silent; then
-              echo "MySQL is ready!"
+              echo "✓ MySQL is ready!"
               break
             fi
-            echo "Waiting for MySQL... ($i/30)"
+            echo "Waiting for MySQL... ($i/60)"
             sleep 2
           done
+
+          # Verify connection one more time
+          if ! mysqladmin ping -h"127.0.0.1" -P3306 -uroot -ptestpassword --silent; then
+            echo "✗ ERROR: MySQL failed to become ready"
+            exit 1
+          fi
+
+      - name: Verify schema.sql exists
+        working-directory: ./backend
+        run: |
+          if [ ! -f ../schema.sql ]; then
+            echo "✗ ERROR: ../schema.sql not found"
+            echo "Current directory: $(pwd)"
+            echo "Parent directory contents:"
+            ls -la ..
+            exit 1
+          fi
+          echo "✓ schema.sql found at: $(realpath ../schema.sql)"
 
       - name: Initialize database schema and seed test data
         working-directory: ./backend
@@ -65,8 +99,12 @@ jobs:
           MYSQL_PASS: testpassword
           MYSQL_DB: cosc471
         run: |
+          echo "Importing schema into database..."
           mysql -h127.0.0.1 -P3306 -uroot -ptestpassword cosc471 < ../schema.sql
           echo "✓ Database initialized with schema and test data"
+
+          echo "Verifying database tables..."
+          mysql -h127.0.0.1 -P3306 -uroot -ptestpassword cosc471 -e "SHOW TABLES;"
 
       - name: Start backend server
         working-directory: ./backend
@@ -78,15 +116,43 @@ jobs:
           MYSQL_DB: cosc471
           PORT: 3000
         run: |
+          echo "Starting backend server..."
           npm start > /tmp/backend-server.log 2>&1 &
           echo $! > /tmp/backend-server.pid
-          echo "Backend server started with PID: $(cat /tmp/backend-server.pid)"
+          echo "✓ Backend server started with PID: $(cat /tmp/backend-server.pid)"
+          sleep 3
 
-      - name: Wait for backend to be ready
-        working-directory: ./backend
-        env:
-          API_URL: http://localhost:3000
-        run: npm run test:wait
+      - name: Show initial backend logs
+        if: always()
+        run: |
+          echo "========================================="
+          echo "Backend Server Initial Logs (first 50 lines)"
+          echo "========================================="
+          head -n 50 /tmp/backend-server.log || echo "No logs found yet"
+
+      - name: Wait for backend to be ready (HTTP check)
+        run: |
+          echo "Waiting for backend HTTP server..."
+          for i in {1..60}; do
+            if curl -sSf http://localhost:3000/ping >/dev/null 2>&1; then
+              echo "✓ Backend is ready and responding!"
+              break
+            fi
+            echo "Waiting for backend... ($i/60)"
+            sleep 2
+          done
+
+          # Final verification
+          if ! curl -sSf http://localhost:3000/ping >/dev/null 2>&1; then
+            echo "✗ ERROR: Backend failed to become ready"
+            echo "========================================="
+            echo "Backend Server Logs:"
+            echo "========================================="
+            cat /tmp/backend-server.log || echo "No logs found"
+            exit 1
+          fi
+
+          echo "✓ Backend is healthy and ready for tests"
 
       - name: Run Authentication Tests
         id: auth-tests
@@ -177,9 +243,31 @@ jobs:
         if: failure()
         run: |
           echo "========================================="
-          echo "Backend Server Logs"
+          echo "Backend Server Logs (Full)"
           echo "========================================="
           cat /tmp/backend-server.log || echo "No logs found"
+
+          echo ""
+          echo "========================================="
+          echo "Backend Process Status"
+          echo "========================================="
+          if [ -f /tmp/backend-server.pid ]; then
+            PID=$(cat /tmp/backend-server.pid)
+            echo "PID: $PID"
+            if ps -p $PID > /dev/null; then
+              echo "Process is still running"
+            else
+              echo "Process has exited"
+            fi
+          else
+            echo "No PID file found"
+          fi
+
+          echo ""
+          echo "========================================="
+          echo "Port 3000 Status"
+          echo "========================================="
+          sudo netstat -tlnp | grep :3000 || echo "Port 3000 not in use"
 
       - name: Cleanup
         if: always()
