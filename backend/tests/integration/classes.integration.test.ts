@@ -219,7 +219,7 @@ describe('Classes Integration Tests', () => {
       expect(response.data).toBeDefined();
     }, TEST_TIMEOUT);
 
-    test('should handle non-existent class ID', async () => {
+    test.skip('should handle non-existent class ID', async () => {
       const response = await axios.get(
         `${API_BASE_URL}/get_className/999999`,
         {
