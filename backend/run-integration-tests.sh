@@ -30,17 +30,23 @@ trap cleanup EXIT INT TERM
 
 # Check if MySQL is running and database exists
 echo "Checking database connection..."
-if ! mysql -u ${MYSQL_USER:-root} -p${MYSQL_PASS:-password} -e "USE ${MYSQL_DB:-cosc471};" 2>/dev/null; then
-    echo "✗ Cannot connect to database. Please ensure MySQL is running and database exists."
-    echo "  Set MYSQL_USER, MYSQL_PASS, and MYSQL_DB environment variables if needed."
+MYSQL_HOST=${MYSQL_HOST:-localhost}
+MYSQL_PORT=${MYSQL_PORT:-3306}
+MYSQL_USER=${MYSQL_USER:-root}
+MYSQL_PASS=${MYSQL_PASS:-password}
+MYSQL_DB=${MYSQL_DB:-cosc471}
+
+if ! mysql -h ${MYSQL_HOST} -P ${MYSQL_PORT} -u ${MYSQL_USER} -p${MYSQL_PASS} -e "USE ${MYSQL_DB};" 2>/dev/null; then
+    echo "✗ Cannot connect to database at ${MYSQL_HOST}:${MYSQL_PORT}. Please ensure MySQL is running and database exists."
+    echo "  Set MYSQL_HOST, MYSQL_PORT, MYSQL_USER, MYSQL_PASS, and MYSQL_DB environment variables if needed."
     exit 1
 fi
-echo "✓ Database connection OK"
+echo "✓ Database connection OK (${MYSQL_HOST}:${MYSQL_PORT})"
 
 # Initialize database with schema and test data
 echo ""
 echo "Initializing database schema and test data..."
-mysql -u ${MYSQL_USER:-root} -p${MYSQL_PASS:-password} ${MYSQL_DB:-cosc471} < ../schema.sql
+mysql -h ${MYSQL_HOST} -P ${MYSQL_PORT} -u ${MYSQL_USER} -p${MYSQL_PASS} ${MYSQL_DB} < ../schema.sql
 echo "✓ Database initialized with test data"
 
 # Start backend server in background (listen on PORT=5000)
