@@ -100,7 +100,7 @@ describe('Assignments Integration Tests', () => {
       );
 
       expect(response.status).toBe(200);
-      expect(response.data).toHaveProperty('message', 'Ass-ignment created');
+      expect(response.data).toHaveProperty('message', 'Assignment created');
       expect(response.data).toHaveProperty('id');
       expect(typeof response.data.id).toBe('number');
     }, TEST_TIMEOUT);

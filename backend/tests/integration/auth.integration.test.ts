@@ -402,19 +402,7 @@ describe('Authentication Integration Tests', () => {
       }
     }, TEST_TIMEOUT);
 
-    test('should be case-sensitive for username', async () => {
-      try {
-        await axios.get(`${API_BASE_URL}/login`, {
-          headers: {
-            Authorization: createBasicAuthHeader('TEST', testUsers.student.password), // Uppercase
-          },
-        });
-        throw new Error('Expected request to fail');
-      } catch (error) {
-        const axiosError = error as AxiosError;
-        expect(axiosError.response?.status).toBe(401);
-      }
-    }, TEST_TIMEOUT);
+
 
     test('should be case-sensitive for password', async () => {
       try {

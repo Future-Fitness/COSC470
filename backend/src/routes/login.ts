@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { sha512, sha512_256 } from 'js-sha512';
 import models from '../util/database';
+import { sequelize } from '../util/database';
 
 const User = models.User;
 
@@ -52,12 +53,16 @@ export default function (app: FastifyInstance) {
       const hashedPass = sha512(pass);
 
       // Check if user/pass is correct
-      const userData = await User.findOne({
-        where: {
-          name: user,
-          hash_pass: hashedPass,
+      const [userData] = await sequelize.query(
+        'SELECT * FROM User WHERE BINARY name = :user AND hash_pass = :hashedPass',
+        {
+          replacements: { user, hashedPass },
+          type: 'SELECT',
+          mapToModel: true,
+          model: User,
         }
-      })
+      );
+
 
       // Something went wrong
       if (!userData) {
@@ -69,19 +74,15 @@ export default function (app: FastifyInstance) {
 
       // Store a session token in the global state
       // @ts-expect-error this is fine
-      app.session = {
-        [token]: {
-          // TODO make this configurable
-          // Expire in 20 minutes
-          inactivityExpire: Date.now() + 20 * 60 * 1000,
-          // No matter what, expire after 3 days
-          fullExpire: Date.now() + 3 * 24 * 60 * 60 * 1000,
-          username: user,
-          id: userData.id,
-        },
-        // @ts-expect-error this is fine
-        ...app.session
-      }
+      app.session[token] = {
+        // TODO make this configurable
+        // Expire in 20 minutes
+        inactivityExpire: Date.now() + 20 * 60 * 1000,
+        // No matter what, expire after 3 days
+        fullExpire: Date.now() + 3 * 24 * 60 * 60 * 1000,
+        username: user,
+        id: userData.id,
+      };
 
       resp.status(200).send({
         token,
