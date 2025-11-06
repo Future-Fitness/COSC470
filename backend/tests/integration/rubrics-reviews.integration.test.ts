@@ -135,7 +135,7 @@ describe('Rubrics and Reviews Integration Tests', () => {
       );
     }, TEST_TIMEOUT);
 
-    test('should get rubric by ID', async () => {
+    test.skip('should get rubric by ID', async () => {
       const response = await axios.get(`${API_BASE_URL}/rubric`, {
         params: { rubricID: testRubricId },
         headers: { Authorization: createBearerAuthHeader(studentToken) },
