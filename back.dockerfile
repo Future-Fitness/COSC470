@@ -20,6 +20,6 @@ RUN pnpm install
 COPY backend/src ./src
 COPY backend/tsconfig.json ./tsconfig.json
 
-EXPOSE 8081
+EXPOSE 5000
 
 CMD ["pnpm", "start"]

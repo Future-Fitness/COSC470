@@ -265,9 +265,9 @@ jobs:
 
           echo ""
           echo "========================================="
-          echo "Port 3000 Status"
+          echo "Port 5000 Status"
           echo "========================================="
-          sudo netstat -tlnp | grep :3000 || echo "Port 3000 not in use"
+          sudo netstat -tlnp | grep :5000 || echo "Port 5000 not in use"
 
       - name: Cleanup
         if: always()

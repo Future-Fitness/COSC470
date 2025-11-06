@@ -1,6 +1,6 @@
 import { didExpire, getToken, removeToken } from "./login";
 
-const BASE_URL = 'http://localhost:8081'
+const BASE_URL = 'http://localhost:5000'
 
 // export const getProfile = async (id: string) => {
 //   // TODO
