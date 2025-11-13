@@ -25,25 +25,23 @@ export const tryLogin = async (username: string, password: string) => {
         "Authorization": `Basic ${credentials}`
       }
     });
-    
-    if (!response.ok) { 
-      // Throw if login fails for any reason
-      throw new Error(`Response status: ${response.status}`);
+
+    if (!response.ok) {
+      // Return error object if login fails
+      return { error: true, message: 'Invalid username or password' };
     }
 
     const json = await response.json();
-    
+
     // Store the token
     localStorage.setItem('user', JSON.stringify(json));
 
     return json;
   } catch (error) {
-    // Login is wrong
+    // Network or other error
     console.error(error);
-    window.location.href = '/';
+    return { error: true, message: 'Network error. Please try again.' };
   }
-
-  return false
 }
 
 export const createClass = async (name: string) => {

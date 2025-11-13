@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './LoginPage.css';
 import Textbox from '../components/Textbox';
 import Button from '../components/Button';
@@ -7,16 +8,27 @@ import { tryLogin } from '../util/api';
 export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
+
   const attemptLogin = async () => {
-    //const result = await tryLogin(username, password);
+    setError(''); // Clear any previous errors
     const result = await tryLogin(username, password);
 
-    if (result.token) {
-      window.location.href = `/home`;
+    if (result.error) {
+      setError(result.message);
+      return;
     }
 
-    // TODO show error message
+    if (result.token) {
+      navigate('/home');
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      attemptLogin();
+    }
   }
 
   return (
@@ -42,11 +54,14 @@ export default function LoginPage() {
                 placeholder='Password...'
                 onInput={setPassword}
                 className='LoginInput'
+                onKeyPress={handleKeyPress}
               />
             </div>
           </div>
 
         </div>
+
+        {error && <div style={{ color: 'red', marginTop: '10px' }}>{error}</div>}
 
         <Button
           onClick={()=> attemptLogin()}

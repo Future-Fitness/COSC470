@@ -2,7 +2,6 @@ import Fastify from 'fastify'
 import fp from 'fastify-plugin'
 import fs from 'fs'
 import path from 'path';
-import cors from '@fastify/cors';
 import authentication from './middleware/auth';
 
 export const app = Fastify({
@@ -10,7 +9,18 @@ export const app = Fastify({
   bodyLimit: 100 * 1024 * 1024,
 })
 
-app.register(cors);
+// Add CORS headers manually to all responses
+app.addHook('onRequest', async (request, reply) => {
+  reply.header('Access-Control-Allow-Origin', '*')
+  reply.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+  reply.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization')
+
+  // Handle preflight
+  if (request.method === 'OPTIONS') {
+    reply.code(200).send()
+  }
+})
+
 app.register(fp(authentication), { noAuthRoutes: ['/login', '/ping'] })
 app.decorate('session', {})
 
