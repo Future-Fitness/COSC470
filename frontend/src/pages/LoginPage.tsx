@@ -23,6 +23,7 @@ export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [showQuickLogin, setShowQuickLogin] = useState(false);
   const navigate = useNavigate();
 
   const attemptLogin = async () => {
@@ -97,11 +98,12 @@ export default function LoginPage() {
 
             {error && <div className="ErrorMessage">{error}</div>}
 
-            <Button
-              onClick={()=> attemptLogin()}
-              className="LoginButton"
-              children="Sign In"
-            />
+            <div className="LoginButtonWrapper">
+              <Button
+                onClick={()=> attemptLogin()}
+                children="Sign In"
+              />
+            </div>
 
             <div className="LoginFooterLink">
               <p>Don't have an account? <a href="/signup">Sign Up</a></p>
@@ -109,23 +111,39 @@ export default function LoginPage() {
 
             <div className="QuickLoginSection">
               <div className="QuickLoginHeader">
-                <span className="QuickLoginTitle">Quick Login (Test Accounts)</span>
-              </div>
-              <div className="QuickLoginGrid">
-                {TEST_CREDENTIALS.map((cred, index) => (
-                  <button
-                    key={index}
-                    type="button"
-                    className="QuickLoginCard"
-                    onClick={() => quickLogin(cred)}
+                <button
+                  type="button"
+                  onClick={() => setShowQuickLogin(!showQuickLogin)}
+                  className="flex items-center justify-between w-full cursor-pointer hover:text-blue-600 transition-colors"
+                >
+                  <span className="QuickLoginTitle">Quick Login (Test Accounts)</span>
+                  <svg
+                    className={`w-4 h-4 transition-transform duration-200 ${showQuickLogin ? 'rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
                   >
-                    <div className="QuickLoginRole">{cred.role}</div>
-                    <div className="QuickLoginDescription">{cred.description}</div>
-                    <div className="QuickLoginCredentials">
-                      <span>{cred.username}</span> / <span>{cred.password}</span>
-                    </div>
-                  </button>
-                ))}
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+              </div>
+              <div className={`overflow-hidden transition-all duration-300 ease-in-out ${showQuickLogin ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+                <div className="QuickLoginGrid">
+                  {TEST_CREDENTIALS.map((cred, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      className="QuickLoginCard"
+                      onClick={() => quickLogin(cred)}
+                    >
+                      <div className="QuickLoginRole">{cred.role}</div>
+                      <div className="QuickLoginDescription">{cred.description}</div>
+                      <div className="QuickLoginCredentials">
+                        <span>{cred.username}</span> / <span>{cred.password}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>

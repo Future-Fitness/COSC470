@@ -110,7 +110,12 @@
   font-weight: 500;
 }
 
-.LoginButton {
+.LoginButtonWrapper {
+  width: 100%;
+  margin-bottom: 0;
+}
+
+.LoginButtonWrapper .Button {
   background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%) !important;
   color: white !important;
   padding: 12px 24px !important;
@@ -121,16 +126,15 @@
   cursor: pointer !important;
   transition: all 0.3s ease !important;
   width: 100%;
-  margin-bottom: 0;
 }
 
-.LoginButton:hover:not(:disabled) {
+.LoginButtonWrapper .Button:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(30, 64, 175, 0.3) !important;
   filter: brightness(1.05) !important;
 }
 
-.LoginButton:active:not(:disabled) {
+.LoginButtonWrapper .Button:active:not(:disabled) {
   transform: translateY(0);
 }
 
@@ -169,10 +173,17 @@
   margin-bottom: 12px;
 }
 
+.QuickLoginHeader button {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  color: #6b7280;
+}
+
 .QuickLoginTitle {
   font-size: 0.85rem;
   font-weight: 600;
-  color: #6b7280;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
