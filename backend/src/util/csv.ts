@@ -8,9 +8,9 @@ export function csv2json(csv: string) {
     }
 
     const values = line.split(',');
-    const obj = {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const obj: any = {};
     headers.forEach((header, i) => {
-      // @ts-expect-error SHUT UP !!!!
       obj[header] = values[i];
     });
 

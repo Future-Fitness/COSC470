@@ -5,10 +5,25 @@ import Textbox from '../components/Textbox';
 import Button from '../components/Button';
 import { tryLogin } from '../util/api';
 
+interface TestCredential {
+  username: string;
+  password: string;
+  role: string;
+  description: string;
+}
+
+const TEST_CREDENTIALS: TestCredential[] = [
+  { username: 'test', password: '1234', role: 'Student', description: 'Test Student Account' },
+  { username: 'test2', password: '1234', role: 'Teacher', description: 'Test Teacher Account' },
+  { username: 'alice', password: 'password123', role: 'Student', description: 'Alice (Student)' },
+  { username: 'professor', password: 'password123', role: 'Teacher', description: 'Professor Account' },
+];
+
 export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [showQuickLogin, setShowQuickLogin] = useState(false);
   const navigate = useNavigate();
 
   const attemptLogin = async () => {
@@ -29,45 +44,107 @@ export default function LoginPage() {
     if (e.key === 'Enter') {
       attemptLogin();
     }
-  }
+  };
+
+  const quickLogin = async (cred: TestCredential) => {
+    setUsername(cred.username);
+    setPassword(cred.password);
+    setError('');
+    const result = await tryLogin(cred.username, cred.password);
+
+    if (result.error) {
+      setError(result.message);
+      return;
+    }
+
+    if (result.token) {
+      navigate('/home');
+    }
+  };
 
   return (
     <div className="LoginPage">
-      <div className="LoginBlock">
-        <h1>Login</h1>
+      <div className="LoginContainer">
+        <div className="LoginBlock">
+          <div className="LoginHeader">
+            <h1 className="AppTitle">Peer Evaluation</h1>
+            <p className="AppSubtitle">Collaborative Peer Review Platform</p>
+          </div>
 
-        <div className="LoginInner">
-          <div className="LoginInputs">
-            <div className="LoginInputChunk">
-              <span>Username</span>
-              <Textbox
-                placeholder='Username...'
-                onInput={setUsername}
-                className='LoginInput'
+          <div className="LoginForm">
+            <div className="LoginInputs">
+              <div className="LoginInputChunk">
+                <label htmlFor="username">Username</label>
+                <Textbox
+                  placeholder='Enter your username...'
+                  onInput={setUsername}
+                  className='LoginInput'
+                  value={username}
+                />
+              </div>
+
+              <div className="LoginInputChunk">
+                <label htmlFor="password">Password</label>
+                <Textbox
+                  type='password'
+                  placeholder='Enter your password...'
+                  onInput={setPassword}
+                  className='LoginInput'
+                  onKeyPress={handleKeyPress}
+                  value={password}
+                />
+              </div>
+            </div>
+
+            {error && <div className="ErrorMessage">{error}</div>}
+
+            <div className="LoginButtonWrapper">
+              <Button
+                onClick={()=> attemptLogin()}
+                children="Sign In"
               />
             </div>
 
-            <div className="LoginInputChunk">
-              <span>Password</span>
-              <Textbox
-                type='password'
-                placeholder='Password...'
-                onInput={setPassword}
-                className='LoginInput'
-                onKeyPress={handleKeyPress}
-              />
+            <div className="LoginFooterLink">
+              <p>Don't have an account? <a href="/signup">Sign Up</a></p>
+            </div>
+
+            <div className="QuickLoginSection">
+              <div className="QuickLoginHeader">
+                <button
+                  type="button"
+                  onClick={() => setShowQuickLogin(!showQuickLogin)}
+                  className="flex items-center justify-between w-full cursor-pointer hover:text-blue-600 transition-colors"
+                >
+                  <span className="QuickLoginTitle">Quick Login (Test Accounts)</span>
+                
+                </button>
+              </div>
+              <div className={`overflow-hidden transition-all duration-300 ease-in-out ${showQuickLogin ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+                <div className="QuickLoginGrid">
+                  {TEST_CREDENTIALS.map((cred, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      className="QuickLoginCard"
+                      onClick={() => quickLogin(cred)}
+                    >
+                      <div className="QuickLoginRole">{cred.role}</div>
+                      <div className="QuickLoginDescription">{cred.description}</div>
+                      <div className="QuickLoginCredentials">
+                        <span>{cred.username}</span> / <span>{cred.password}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 
+          <div className="LoginFooter">
+            <p className="Credits">Made by Harsh, Parag, Guntash, Allen & Kartik</p>
+          </div>
         </div>
-
-        {error && <div style={{ color: 'red', marginTop: '10px' }}>{error}</div>}
-
-        <Button
-          onClick={()=> attemptLogin()}
-          children="Login"
-        />
-
       </div>
     </div>
   );

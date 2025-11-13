@@ -14,7 +14,7 @@ docker-compose ps
 
 echo ""
 echo "Services are starting up!"
-echo "Frontend: http://localhost:3000"
-echo "Backend: http://localhost:5000"
+echo "Frontend: http://localhost:5009"
+echo "Backend: http://localhost:5008"
 echo ""
 echo "To view logs, run: docker-compose logs -f"

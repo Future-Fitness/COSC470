@@ -9,11 +9,12 @@ export const app = Fastify({
   bodyLimit: 100 * 1024 * 1024,
 })
 
-// Add CORS headers manually to all responses
+// Add CORS headers manually to all responses - completely permissive
 app.addHook('onRequest', async (request, reply) => {
   reply.header('Access-Control-Allow-Origin', '*')
-  reply.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-  reply.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization')
+  reply.header('Access-Control-Allow-Methods', '*')
+  reply.header('Access-Control-Allow-Headers', '*')
+  reply.header('Access-Control-Expose-Headers', '*')
 
   // Handle preflight
   if (request.method === 'OPTIONS') {

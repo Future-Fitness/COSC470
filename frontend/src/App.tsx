@@ -2,10 +2,10 @@ import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import Home from "./pages/Home";
 import Sidebar from "./components/Sidebar";
 
-import "./App.css";
 import Profile from "./pages/Profile";
 import CreateClass from "./pages/CreateClass";
 import LoginPage from "./pages/LoginPage";
+import SignupPage from "./pages/SignupPage";
 import ClassHome from "./pages/ClassHome";
 import ClassMembers from "./pages/ClassMembers";
 import Assignment from "./pages/Assignment";
@@ -14,14 +14,15 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 function AppContent() {
   const location = useLocation();
-  const showSidebar = location.pathname !== '/';
+  const showSidebar = location.pathname !== '/' && location.pathname !== '/signup';
 
   return (
-    <div className="App">
+    <div className="flex flex-row min-h-screen bg-gray-50">
       {showSidebar && <Sidebar />}
-      <div className="inner">
+      <div className="flex flex-col flex-1 w-full overflow-y-auto">
         <Routes>
           <Route path="/" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/home" element={<Home />} />
             <Route path="/classes/create" element={<CreateClass />} />
