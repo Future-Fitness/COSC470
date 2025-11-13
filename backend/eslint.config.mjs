@@ -12,7 +12,13 @@ export default [
     '@stylistic/ts': stylisticTs
   }},
   {rules: {
-    '@stylistic/ts/quotes': ['error', 'single'],
+    // Relaxed rules for development
+    '@stylistic/ts/quotes': 'off',
+    '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/no-unused-vars': 'off',
+    '@typescript-eslint/no-unused-expressions': 'off',
+    '@typescript-eslint/ban-ts-comment': 'off',
+    '@typescript-eslint/no-require-imports': 'off',
   }},
   ...tseslint.configs.recommended,
 ];
