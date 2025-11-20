@@ -1,5 +1,6 @@
 import Fastify from 'fastify'
 import fp from 'fastify-plugin'
+import multipart from '@fastify/multipart'
 import fs from 'fs'
 import path from 'path';
 import authentication from './middleware/auth';
@@ -9,11 +10,19 @@ export const app = Fastify({
   bodyLimit: 100 * 1024 * 1024,
 })
 
-// Add CORS headers manually to all responses
+// Register multipart for file uploads
+app.register(multipart, {
+  limits: {
+    fileSize: 100 * 1024 * 1024, // 100MB max file size
+  }
+})
+
+// Add CORS headers manually to all responses - completely permissive
 app.addHook('onRequest', async (request, reply) => {
   reply.header('Access-Control-Allow-Origin', '*')
-  reply.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-  reply.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization')
+  reply.header('Access-Control-Allow-Methods', '*')
+  reply.header('Access-Control-Allow-Headers', '*')
+  reply.header('Access-Control-Expose-Headers', '*')
 
   // Handle preflight
   if (request.method === 'OPTIONS') {

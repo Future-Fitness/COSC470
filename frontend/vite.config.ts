@@ -8,8 +8,15 @@ export default defineConfig({
 		watch: {
 			usePolling: true,
 		},
-    strictPort: true,
-    port: 3000,
+    strictPort: false,
+    port: 5009,
     host: '0.0.0.0',
+    hmr: {
+      overlay: false, // Disable error overlay
+    }
+  },
+  build: {
+    target: 'esnext',
+    minify: false, // Faster builds
   }
 })

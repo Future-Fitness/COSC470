@@ -1,0 +1,223 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  pr-report:
+    name: PR Report & Statistics
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate PR Report
+        id: report
+        run: |
+          echo "## PR Statistics Report" > report.md
+          echo "" >> report.md
+
+          # Get base branch
+          BASE_SHA=${{ github.event.pull_request.base.sha }}
+          HEAD_SHA=${{ github.event.pull_request.head.sha }}
+
+          # Overall stats
+          echo "### Overview" >> report.md
+          echo "" >> report.md
+
+          # Count commits
+          COMMIT_COUNT=$(git rev-list --count $BASE_SHA..$HEAD_SHA)
+          echo "- **Commits:** $COMMIT_COUNT" >> report.md
+
+          # Get diff stats
+          STATS=$(git diff --shortstat $BASE_SHA..$HEAD_SHA)
+          FILES_CHANGED=$(echo "$STATS" | grep -oP '\d+(?= file)' || echo "0")
+          INSERTIONS=$(echo "$STATS" | grep -oP '\d+(?= insertion)' || echo "0")
+          DELETIONS=$(echo "$STATS" | grep -oP '\d+(?= deletion)' || echo "0")
+
+          echo "- **Files Changed:** $FILES_CHANGED" >> report.md
+          echo "- **Lines Added:** +$INSERTIONS" >> report.md
+          echo "- **Lines Deleted:** -$DELETIONS" >> report.md
+          echo "" >> report.md
+
+          # Files by type
+          echo "### Changes by File Type" >> report.md
+          echo "" >> report.md
+          echo "| Extension | Files | Additions | Deletions |" >> report.md
+          echo "|-----------|-------|-----------|-----------|" >> report.md
+
+          git diff --numstat $BASE_SHA..$HEAD_SHA | while read added deleted file; do
+            if [ -n "$file" ]; then
+              ext="${file##*.}"
+              echo "$ext $added $deleted"
+            fi
+          done | awk '
+          {
+            ext[$1]++
+            add[$1]+=$2
+            del[$1]+=$3
+          }
+          END {
+            for (e in ext) {
+              printf "| .%s | %d | +%d | -%d |\n", e, ext[e], add[e], del[e]
+            }
+          }' | sort >> report.md
+
+          echo "" >> report.md
+
+          # Changes by directory
+          echo "### Changes by Directory" >> report.md
+          echo "" >> report.md
+          echo "| Directory | Files Changed |" >> report.md
+          echo "|-----------|---------------|" >> report.md
+
+          git diff --name-only $BASE_SHA..$HEAD_SHA | while read file; do
+            dirname "$file"
+          done | sort | uniq -c | sort -rn | head -10 | while read count dir; do
+            echo "| $dir | $count |"
+          done >> report.md
+
+          echo "" >> report.md
+
+          # List of changed files
+          echo "### Changed Files" >> report.md
+          echo "" >> report.md
+          echo "<details>" >> report.md
+          echo "<summary>Click to expand file list</summary>" >> report.md
+          echo "" >> report.md
+
+          git diff --name-status $BASE_SHA..$HEAD_SHA | while read status file; do
+            case $status in
+              A) icon="🆕" ;;
+              M) icon="📝" ;;
+              D) icon="🗑️" ;;
+              R*) icon="📛" ;;
+              *) icon="❓" ;;
+            esac
+            echo "- $icon \`$file\`"
+          done >> report.md
+
+          echo "" >> report.md
+          echo "</details>" >> report.md
+          echo "" >> report.md
+
+          # Commit list
+          echo "### Commits" >> report.md
+          echo "" >> report.md
+          echo "<details>" >> report.md
+          echo "<summary>Click to expand commit list</summary>" >> report.md
+          echo "" >> report.md
+
+          git log --oneline $BASE_SHA..$HEAD_SHA | while read hash msg; do
+            echo "- \`$hash\` $msg"
+          done >> report.md
+
+          echo "" >> report.md
+          echo "</details>" >> report.md
+
+          cat report.md
+
+      - name: Post PR Comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('report.md', 'utf8');
+
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('## PR Statistics Report')
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: report
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: report
+              });
+            }
+
+  backend-checks:
+    name: Backend Lint & Type Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: pnpm install --frozen-lockfile
+
+      - name: Run backend linting
+        working-directory: backend
+        run: pnpm run lint
+
+      - name: Run backend type check
+        working-directory: backend
+        run: pnpm run build
+
+      - name: Run backend unit tests
+        working-directory: backend
+        run: pnpm run test:unit
+
+  frontend-checks:
+    name: Frontend Lint & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run frontend linting
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Run frontend build
+        working-directory: frontend
+        run: npm run build

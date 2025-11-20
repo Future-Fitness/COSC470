@@ -165,40 +165,40 @@ VALUES
     (1, 5);
 
 -- Insert dummy Reviews
-/* INSERT INTO Review (assignmentID, reviewerID, revieweeID)
+INSERT INTO Review (assignmentID, reviewerID, revieweeID)
 VALUES
     (1, 1, 2),
     (2, 3, 4),
     (3, 5, 1),
     (4, 2, 3),
-    (5, 4, 5); */
+    (5, 4, 5); 
 
 -- Insert dummy Criteria
-/* INSERT INTO Criteria (reviewID, grade, comments)
+INSERT INTO Criteria (reviewID, grade, comments)
 VALUES
     (1, 85, 'Good job!'),
     (2, 90, 'Excellent work!'),
     (3, 75, 'Needs improvement'),
     (4, 88, 'Well done!'),
     (5, 92, 'Great submission!');
- */
+ 
 -- Insert dummy Rubrics
-/* INSERT INTO Rubric (assignmentID)
+INSERT INTO Rubric (assignmentID)
 VALUES
     (1),
     (2),
     (3),
     (4),
-    (5); */
+    (5); 
 
 -- Insert dummy Criteria_Description
-/* INSERT INTO Criteria_Description (scoreMax, canComment)
+INSERT INTO Criteria_Description (scoreMax, canComment)
 VALUES
     (100, TRUE),
     (100, TRUE),
     (100, FALSE),
     (100, TRUE),
-    (100, TRUE); */
+    (100, TRUE); 
 -- -- Add foreign key constraints
 -- ALTER TABLE Assignment
 --     ADD CONSTRAINT fk_assignment_course
