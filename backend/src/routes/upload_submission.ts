@@ -8,21 +8,39 @@ const Submission = models.Submission;
 export default function (app: FastifyInstance) {
   app.post('/upload_submission', async (req, resp) => {
     try {
+      console.log('Upload request received');
+      console.log('Headers:', req.headers);
+      
       // Get the multipart data
-      const data = await req.file();
+      const parts = await req.parts();
+      
+      let file: any = null;
+      let assignmentID: string | undefined;
+      
+      // Process all parts
+      for await (const part of parts) {
+        if (part.type === 'file') {
+          console.log('File part received:', part.filename);
+          file = part;
+        } else {
+          // Field
+          console.log('Field received:', part.fieldname, '=', part.value);
+          if (part.fieldname === 'assignmentID') {
+            assignmentID = part.value as string;
+          }
+        }
+      }
 
-      if (!data) {
+      if (!file) {
+        console.error('No file in request');
         resp.status(400).send({ error: 'No file uploaded' });
         return;
       }
-
-      // Get form fields - in @fastify/multipart v9, fields are accessed directly
-      const assignmentIDField = data.fields.assignmentID;
-      const assignmentID = typeof assignmentIDField === 'object' && 'value' in assignmentIDField
-        ? assignmentIDField.value
-        : assignmentIDField;
+      
+      console.log('Parsed assignment ID:', assignmentID);
 
       if (!assignmentID) {
+        console.error('No assignment ID provided');
         resp.status(400).send({ error: 'Assignment ID is required' });
         return;
       }
@@ -60,7 +78,7 @@ export default function (app: FastifyInstance) {
         );
 
         // Pipe the file stream to Cloudinary
-        data.file.pipe(uploadStream);
+        file.file.pipe(uploadStream);
       });
 
       // Wait for upload to complete
