@@ -2,9 +2,12 @@ import { useParams } from "react-router-dom";
 import TabNavigation from "../components/TabNavigation";
 import { useEffect, useState } from "react";
 import Button from "../components/Button";
+import StudentCSVUpload from "../components/StudentCSVUpload";
 import { getEnrolledStudents, getAvailableStudents, addStudentsToClass, removeStudentsFromClass, getClassName, type Student } from "../util/api";
 import { isTeacher } from "../util/login";
-import { UserPlus, UserMinus, X, Loader2, Users } from "lucide-react";
+import { UserPlus, UserMinus, X, Loader2, Users, Upload } from "lucide-react";
+import { showConfirm } from "../util/confirm";
+import { showSuccess, showError } from "../util/toast";
 
 export default function ClassMembers() {
   const { id } = useParams();
@@ -13,6 +16,7 @@ export default function ClassMembers() {
   const [className, setClassName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [showCSVUpload, setShowCSVUpload] = useState(false);
   const [selectedEnrolled, setSelectedEnrolled] = useState<number[]>([]);
   const [selectedAvailable, setSelectedAvailable] = useState<number[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -84,21 +88,26 @@ export default function ClassMembers() {
 
   const handleRemoveSelected = async () => {
     if (!id || selectedEnrolled.length === 0) return;
-    if (!confirm(`Remove ${selectedEnrolled.length} student(s) from class?`)) return;
+    
+    const confirmed = await showConfirm({
+      title: 'Remove Students',
+      message: `Are you sure you want to remove ${selectedEnrolled.length} student(s) from this class?`,
+      confirmText: 'Remove',
+      cancelText: 'Cancel',
+      variant: 'danger',
+    });
+    
+    if (!confirmed) return;
 
     try {
       setSubmitting(true);
       const result = await removeStudentsFromClass(parseInt(id), selectedEnrolled);
-      setMessage({
-        type: 'success',
-        text: `Successfully removed ${result.removedCount} student(s) from class`
-      });
+      showSuccess(`Successfully removed ${result.removedCount} student(s) from class`);
       await fetchEnrolled();
       setSelectedEnrolled([]);
-      setTimeout(() => setMessage(null), 5000);
     } catch (error) {
       console.error('Error removing students:', error);
-      setMessage({ type: 'error', text: 'Failed to remove students' });
+      showError('Failed to remove students');
     } finally {
       setSubmitting(false);
     }
@@ -125,13 +134,22 @@ export default function ClassMembers() {
       <div className="flex flex-row justify-between items-center p-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{className || 'Loading...'}</h2>
         {isTeacher() && (
-          <Button
-            onClick={handleAddStudentsClick}
-            className="flex items-center gap-2"
-          >
-            <UserPlus className="w-4 h-4" />
-            Add Students
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              onClick={() => setShowCSVUpload(true)}
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+            >
+              <Upload className="w-4 h-4" />
+              Upload CSV
+            </Button>
+            <Button
+              onClick={handleAddStudentsClick}
+              className="flex items-center gap-2"
+            >
+              <UserPlus className="w-4 h-4" />
+              Add Students
+            </Button>
+          </div>
         )}
       </div>
 
@@ -198,6 +216,7 @@ export default function ClassMembers() {
                       checked={selectedEnrolled.includes(student.id)}
                       onChange={() => toggleEnrolledStudent(student.id)}
                       className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                      aria-label={`Select ${student.name}`}
                     />
                   )}
                   <div className="flex-1">
@@ -224,6 +243,7 @@ export default function ClassMembers() {
               <button
                 onClick={() => setShowModal(false)}
                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                aria-label="Close modal"
               >
                 <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
               </button>
@@ -253,6 +273,7 @@ export default function ClassMembers() {
                         checked={selectedAvailable.includes(student.id)}
                         onChange={() => toggleAvailableStudent(student.id)}
                         className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                        aria-label={`Select ${student.name}`}
                       />
                       <div className="flex-1">
                         <div className="font-medium text-gray-900 dark:text-gray-100">{student.name}</div>
@@ -293,6 +314,19 @@ export default function ClassMembers() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* CSV Upload Modal */}
+      {showCSVUpload && id && (
+        <StudentCSVUpload
+          courseId={parseInt(id)}
+          onUploadComplete={() => {
+            fetchEnrolled();
+            setMessage({ type: 'success', text: 'Students uploaded successfully' });
+            setTimeout(() => setMessage(null), 5000);
+          }}
+          onClose={() => setShowCSVUpload(false)}
+        />
       )}
     </div>
   );

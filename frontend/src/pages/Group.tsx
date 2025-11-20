@@ -314,9 +314,19 @@ export default function Group() {
                     showError("Please select a group to delete");
                     return;
                   }
-                  if (!confirm("Are you sure you want to delete this group?")) {
+                  
+                  const confirmed = await showConfirm({
+                    title: 'Delete Group',
+                    message: 'Are you sure you want to delete this group? This action cannot be undone.',
+                    confirmText: 'Delete',
+                    cancelText: 'Cancel',
+                    variant: 'danger',
+                  });
+                  
+                  if (!confirmed) {
                     return;
                   }
+                  
                   try {
                     await deleteGroup(selectedGroup);
                     const localGroup = { ...groupTable }
