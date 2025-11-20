@@ -30,13 +30,13 @@ export default function Criterion(props: props) {
 
     return (
         <tr className='h-[100px]'>
-            <th className='bg-slate-300 text-center p-2 text-[15px] font-bold text-slate-900 w-1/2 border border-black'>{props.question}</th>
+            <th className='bg-gray-200 dark:bg-gray-700 text-center p-2 text-[15px] font-bold text-gray-900 dark:text-gray-100 w-1/2 border border-gray-300 dark:border-gray-600'>{props.question}</th>
             {props.hasScore ? (
                 Array.from({ length: props.scoreMax }, (_, i) => {
                     const cellValue = i + 1;
                     const isReviewed = cellValue === props.grade;
                     const isClicked = clickedCell === cellValue;
-                    const cellClasses = `grow text-center p-2 box-border border border-black ${isReviewed ? 'bg-green-300' : ''} ${isClicked ? 'bg-yellow-300' : ''}`;
+                    const cellClasses = `grow text-center p-2 box-border border border-gray-300 dark:border-gray-600 cursor-pointer ${isReviewed ? 'bg-green-300 dark:bg-green-700' : ''} ${isClicked ? 'bg-yellow-300 dark:bg-yellow-700' : ''}`;
                     return (
                         <td
                             key={i}
@@ -48,8 +48,8 @@ export default function Criterion(props: props) {
                     );
                 })
             ) : (
-                <td className='border border-black'>
-                    <textarea className='w-full h-full min-h-[80px] resize-y box-border m-0 p-1 border border-[#ddd] rounded bg-slate-50 text-slate-900 font-sans text-base' placeholder='Comment here'/>
+                <td className='border border-gray-300 dark:border-gray-600'>
+                    <textarea className='w-full h-full min-h-[80px] resize-y box-border m-0 p-1 border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 font-sans text-base focus:outline-none focus:ring-2 focus:ring-primary-500' placeholder='Comment here'/>
                 </td>
             )}
         </tr>

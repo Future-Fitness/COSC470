@@ -2,9 +2,50 @@ import { didExpire, getToken, removeToken } from "./login";
 
 const BASE_URL = 'http://localhost:5008'
 
-// export const getProfile = async (id: string) => {
-//   // TODO
-// }
+export interface UserProfile {
+  id: number;
+  name: string;
+  email: string;
+  isTeacher: boolean;
+}
+
+// Get current user's profile
+export const getMyProfile = async (): Promise<UserProfile> => {
+  const resp = await fetch(`${BASE_URL}/profile`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${getToken()}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  maybeHandleExpire(resp);
+
+  if (!resp.ok) {
+    throw new Error(`Response status: ${resp.status}`);
+  }
+
+  return await resp.json();
+}
+
+// Get any user's profile by ID
+export const getProfile = async (id: string): Promise<UserProfile> => {
+  const resp = await fetch(`${BASE_URL}/profile/${id}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${getToken()}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  maybeHandleExpire(resp);
+
+  if (!resp.ok) {
+    throw new Error(`Response status: ${resp.status}`);
+  }
+
+  return await resp.json();
+}
 
 
 export const maybeHandleExpire = (response: Response) => {

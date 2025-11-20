@@ -32,6 +32,7 @@ function AppContent() {
           <Route element={<ProtectedRoute />}>
             <Route path="/home" element={<Home />} />
             <Route path="/classes/create" element={<CreateClass />} />
+            <Route path="/profile" element={<Profile />} />
             <Route path="/profile/:id" element={<Profile />} />
             <Route path="/classes/:id/home" element={<ClassHome />} />
             <Route path="/classes/:id/members" element={<ClassMembers />} />

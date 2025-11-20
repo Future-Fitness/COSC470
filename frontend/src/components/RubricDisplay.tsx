@@ -53,15 +53,15 @@ export default function RubricDisplay({ rubricId, onCriterionSelect, grades }: R
 
     if (!rubricId || criteria.length === 0) {
         return (
-            <div className="p-5 bg-white rounded-lg shadow-md my-5">
+            <div className="p-5 bg-white dark:bg-gray-800 rounded-lg shadow-md my-5 text-gray-700 dark:text-gray-300">
                 <p>No rubric available yet</p>
             </div>
         );
     }
 
     return (
-        <div className="p-5 bg-white rounded-lg shadow-md my-5">
-            <h2 className="mb-5 text-gray-800 text-xl font-bold">Rubric</h2>
+        <div className="p-5 bg-white dark:bg-gray-800 rounded-lg shadow-md my-5">
+            <h2 className="mb-5 text-gray-900 dark:text-white text-xl font-bold">Rubric</h2>
             <Criteria
                 questions={questions}
                 scoreMaxes={scoreMaxes}

@@ -47,7 +47,7 @@ export default function Sidebar() {
 
         <SidebarRow
           selected={location.includes('/profile')}
-          href="/profile/1"
+          href="/profile"
           icon={<User className="w-5 h-5" />}
           collapsed={isSidebarCollapsed}
         >

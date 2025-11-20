@@ -14,7 +14,9 @@ export default function Button(props: Props) {
 
   const stateClasses = props.disabled
     ? 'bg-slate-400 dark:bg-slate-600 text-slate-600 dark:text-slate-400 cursor-not-allowed'
-    : `${typeClasses} cursor-pointer hover:brightness-110`;
+    : props.type === 'secondary'
+      ? 'bg-slate-500 dark:bg-slate-600 text-white hover:bg-slate-600 dark:hover:bg-slate-700 cursor-pointer'
+      : 'bg-primary-500 dark:bg-primary-600 text-white hover:bg-primary-600 dark:hover:bg-primary-700 cursor-pointer';
 
   return (
     <button

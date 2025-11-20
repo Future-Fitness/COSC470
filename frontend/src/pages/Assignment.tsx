@@ -73,9 +73,9 @@ export default function Assignment() {
   }
 
   return (
-    <>
-      <div className="flex flex-row justify-between items-center p-3">
-        <h2 className="text-2xl font-bold">Assignment {id}</h2>
+    <div className="bg-gray-100 dark:bg-gray-900">
+      <div className="flex flex-row justify-between items-center p-3 pb-4 border-b border-gray-200 dark:border-gray-700">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">Assignment {id}</h2>
       </div>
 
       <TabNavigation
@@ -91,24 +91,25 @@ export default function Assignment() {
         ]}
       />
 
-      <div className='my-5 mx-3'>
+
+      <div className='mt-6 mb-5 mx-3'>
         <RubricDisplay rubricId={Number(id)} onCriterionSelect={handleCriterionSelect} grades={review} />
       </div>
       {
         isTeacher() &&
-          <div className='my-5 mx-3'>
+          <div className='mt-6 mb-5 mx-3'>
             <RubricCreator id={Number(id)}/>
           </div>
       }
 
 {
-      !isTeacher() && <div className='my-5 mx-3 p-5 bg-white rounded-lg shadow-md'>
-        <h3 className="text-xl font-bold mb-3">Select a group member to review</h3>
+      !isTeacher() && <div className='mt-6 mb-5 mx-3 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md'>
+        <h3 className="text-xl font-bold mb-3 text-gray-900 dark:text-gray-100">Select a group member to review</h3>
           {stuGroup.map((stus) => {
                 return (
                   <div key={stus.userID} className="flex items-center gap-2 my-2">
                     <input type='radio' id={stus.userID.toString()} value={stus.userID} name='groupMembers' onChange={handleRadioChange} />
-                    <label htmlFor={stus.userID.toString()}>{stus.username}</label>
+                    <label htmlFor={stus.userID.toString()} className="text-gray-900 dark:text-gray-100">{stus.username}</label>
                   </div>
                 )
               }
@@ -134,7 +135,7 @@ export default function Assignment() {
             }
           }}>Submit Review</button>
       </div>}
-    </>
+    </div>
   );
 }
 

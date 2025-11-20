@@ -137,7 +137,7 @@ export default function Group() {
   }, []);
 
   return (
-    <>
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
       <div className="flex flex-row justify-between items-center p-3">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Assignment {id}</h2>
       </div>
@@ -351,6 +351,6 @@ export default function Group() {
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 }

@@ -50,7 +50,7 @@ export default function ClassHome() {
     };
     
     return (
-      <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+      <>
         <div className="flex flex-row justify-between items-center p-3">
           <div className="flex flex-row justify-between items-center p-3">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{className}</h2>
@@ -111,6 +111,6 @@ export default function ClassHome() {
           </div>
         ) : null}
       </div>
-    </div>
+    </>
   );
 }
