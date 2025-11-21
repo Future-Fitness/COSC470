@@ -16,6 +16,7 @@ import TabNavigation from "../components/TabNavigation";
 import { isTeacher } from "../util/login";
 import Textbox from "../components/Textbox";
 import { showSuccess, showError } from "../util/toast";
+import { showConfirm } from "../util/confirm";
 
 function fisherYates<T>(array: T[]): T[] {
   let m = array.length, t, i;

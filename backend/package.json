@@ -18,6 +18,7 @@
     "test:integration:assignments": "jest tests/integration/assignments.integration.test.ts --runInBand --verbose",
     "test:integration:groups": "jest tests/integration/groups.integration.test.ts --runInBand --verbose",
     "test:integration:rubrics": "jest tests/integration/rubrics-reviews.integration.test.ts --runInBand --verbose",
+    "test:integration:csv": "jest tests/integration/csv-upload.integration.test.ts --runInBand --verbose",
     "test:wait": "ts-node tests/wait-for-server.ts",
     "gen-schema": "ts-node generate.ts"
   },
@@ -30,6 +31,7 @@
     "fastify-plugin": "^5.0.1",
     "js-sha512": "^0.9.0",
     "mysql2": "^3.12.0",
+    "nodemailer": "^7.0.10",
     "sequelize": "^6.37.5",
     "ts-node": "^10.9.2"
   },
@@ -37,6 +39,7 @@
     "@jest/globals": "^29.7.0",
     "@stylistic/eslint-plugin-ts": "^3.0.1",
     "@types/node": "^24.10.0",
+    "@types/nodemailer": "^7.0.4",
     "axios": "^1.13.2",
     "eslint": "^9.19.0",
     "globals": "^15.14.0",

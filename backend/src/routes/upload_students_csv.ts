@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyRequest } from 'fastify';
 import models from '../util/database';
 import { csv2json } from '../util/csv';
 import { sha512 } from 'js-sha512';
+import emailService from '../services/emailService';
 
 const Course = models.Course;
 const User = models.User;
@@ -72,10 +73,12 @@ export default function (app: FastifyInstance) {
       }
 
       const defaultStudentPassword = process.env.DEFAULT_STUDENT_PASSWORD || 'letmein';
+      const loginUrl = process.env.LOGIN_URL || 'http://localhost:5009/login';
       const results = {
         added: [] as string[],
         alreadyEnrolled: [] as string[],
         errors: [] as { email: string; error: string }[],
+        newUsers: [] as { email: string; password: string }[],
       };
 
       // Process each student
@@ -86,11 +89,16 @@ export default function (app: FastifyInstance) {
           // Find or create user by email
           let user = await User.findOne({ where: { email } });
 
+          let isNewUser = false;
+          let userPassword = '';
+          
           if (!user) {
             // Create new user
             const studentId = studentData.id ? parseInt(studentData.id) : undefined;
             const name = studentData.name?.trim() || email.split('@')[0];
             const password = studentData.password?.trim() || defaultStudentPassword;
+            userPassword = password;
+            isNewUser = true;
 
             user = await User.create({
               id: studentId,
@@ -121,6 +129,13 @@ export default function (app: FastifyInstance) {
 
           if (created) {
             results.added.push(email);
+            // Track new users for email notification
+            if (isNewUser) {
+              results.newUsers.push({
+                email,
+                password: userPassword,
+              });
+            }
           } else {
             results.alreadyEnrolled.push(email);
           }
@@ -133,11 +148,30 @@ export default function (app: FastifyInstance) {
         }
       }
 
+      // Send email notifications to newly created users
+      if (results.newUsers.length > 0) {
+        const emailData = results.newUsers.map(user => ({
+          email: user.email,
+          courseName: course.name,
+          temporaryPassword: user.password,
+          loginUrl,
+        }));
+
+        try {
+          const emailResults = await emailService.sendBulkNewStudentEmails(emailData);
+          console.log(`Sent ${emailResults.sent.length} emails, ${emailResults.failed.length} failed`);
+        } catch (error) {
+          console.error('Error sending emails:', error);
+          // Don't fail the entire request if emails fail
+        }
+      }
+
       resp.send({
         message: `Successfully processed ${parsed.length} student(s)`,
         addedCount: results.added.length,
         alreadyEnrolledCount: results.alreadyEnrolled.length,
         errorCount: results.errors.length,
+        newUsersCount: results.newUsers.length,
         results,
       });
     } catch (error) {

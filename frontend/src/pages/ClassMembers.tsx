@@ -20,7 +20,6 @@ export default function ClassMembers() {
   const [selectedEnrolled, setSelectedEnrolled] = useState<number[]>([]);
   const [selectedAvailable, setSelectedAvailable] = useState<number[]>([]);
   const [submitting, setSubmitting] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
   const fetchEnrolled = async () => {
     if (!id) return;
@@ -45,7 +44,7 @@ export default function ClassMembers() {
         setClassName(classData.className);
       } catch (error) {
         console.error('Error fetching data:', error);
-        setMessage({ type: 'error', text: 'Failed to load class members' });
+        showError('Failed to load class members');
       } finally {
         setLoading(false);
       }
@@ -61,7 +60,7 @@ export default function ClassMembers() {
       setShowModal(true);
     } catch (error) {
       console.error('Error fetching available students:', error);
-      setMessage({ type: 'error', text: 'Failed to load available students' });
+      showError('Failed to load available students');
     }
   };
 
@@ -70,17 +69,13 @@ export default function ClassMembers() {
     try {
       setSubmitting(true);
       const result = await addStudentsToClass(parseInt(id), selectedAvailable);
-      setMessage({
-        type: 'success',
-        text: `Successfully added ${result.addedCount} student(s) to class`
-      });
+      showSuccess(`Successfully added ${result.addedCount} student(s) to class`);
       await fetchEnrolled();
       setShowModal(false);
       setSelectedAvailable([]);
-      setTimeout(() => setMessage(null), 5000);
     } catch (error) {
       console.error('Error adding students:', error);
-      setMessage({ type: 'error', text: 'Failed to add students' });
+      showError('Failed to add students');
     } finally {
       setSubmitting(false);
     }
@@ -161,17 +156,6 @@ export default function ClassMembers() {
       />
 
       <div className="max-w-6xl mx-auto p-6">
-        {/* Message Banner */}
-        {message && (
-          <div className={`mb-6 p-4 rounded-lg ${
-            message.type === 'success'
-              ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400'
-              : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400'
-          }`}>
-            {message.text}
-          </div>
-        )}
-
         {/* Enrolled Students Section */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex justify-between items-center mb-6">
@@ -322,8 +306,7 @@ export default function ClassMembers() {
           courseId={parseInt(id)}
           onUploadComplete={() => {
             fetchEnrolled();
-            setMessage({ type: 'success', text: 'Students uploaded successfully' });
-            setTimeout(() => setMessage(null), 5000);
+            showSuccess('Students uploaded successfully');
           }}
           onClose={() => setShowCSVUpload(false)}
         />
