@@ -2,9 +2,11 @@ import { describe, test, expect, jest, beforeEach } from '@jest/globals';
 
 // Mock nodemailer before importing emailService
 jest.mock('nodemailer', () => ({
-  createTransport: jest.fn(() => ({
-    sendMail: jest.fn().mockResolvedValue({ messageId: 'test-message-id' })
-  }))
+  createTransport: jest.fn<() => { sendMail: jest.Mock }>()
+    .mockReturnValue({
+      sendMail: jest.fn<() => Promise<{ messageId: string }>>()
+        .mockResolvedValue({ messageId: 'test-message-id' })
+    })
 }));
 
 describe('EmailService', () => {

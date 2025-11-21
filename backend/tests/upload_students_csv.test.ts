@@ -18,10 +18,11 @@ jest.mock('../src/util/database', () => ({
 // Mock email service
 jest.mock('../src/services/emailService', () => ({
   default: {
-    sendBulkNewStudentEmails: jest.fn().mockResolvedValue({
-      sent: [],
-      failed: []
-    })
+    sendBulkNewStudentEmails: jest.fn<() => Promise<{ sent: string[]; failed: string[] }>>()
+      .mockResolvedValue({
+        sent: [],
+        failed: []
+      })
   }
 }));
 
